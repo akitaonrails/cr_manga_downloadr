@@ -1,0 +1,12 @@
+name: cr_manga_downloadr
+version: 0.1.0
+
+authors:
+  - AkitaOnRails <fabioakita@gmail.com>
+
+license: MIT
+
+development_dependencies:
+  webmock:
+    github: manastech/webmock.cr
+    branch: master

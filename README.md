@@ -1,0 +1,43 @@
+# Crystal - MangaReader Downloader
+
+I did a Ruby version of a MangaReader crawler using Typhoeus. The code got really convoluted and I never properly refactored it.
+
+The original code is here:
+
+    https://github.com/akitaonrails/manga-downloadr
+
+I also did a better structured Elixir version here:
+
+    https://github.com/akitaonrails/ex_manga_downloadr
+
+## Installation
+
+To set up the development environment install the dependencies:
+
+    crystal deps
+
+TODO: not finished yet
+
+## Usage
+
+TODO: not finished yet
+
+## Development
+
+You can run the specs like this:
+
+    crystal spec
+
+TODO: not finished yet
+
+## Contributing
+
+1. Fork it ( https://github.com/akitaonrails/cr_manga_downloadr/fork )
+2. Create your feature branch (git checkout -b my-new-feature)
+3. Commit your changes (git commit -am 'Add some feature')
+4. Push to the branch (git push origin my-new-feature)
+5. Create a new Pull Request
+
+## Contributors
+
+- [AkitaOnRails](https://github.com/akitaonrails) - creator, maintainer
