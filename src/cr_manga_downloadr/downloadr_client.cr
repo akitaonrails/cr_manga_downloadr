@@ -1,4 +1,5 @@
 require "http/client"
+require "xml"
 
 module CrMangaDownloadr
   class DownloadrClient
@@ -15,13 +16,14 @@ module CrMangaDownloadr
       @http_client.try &.close
     end
 
-    def get(uri : String, &block : HTTP::Client::Response -> Array(String?) | Tuple(String?, String?, String?))
+    def get(uri : String, &block : XML::Node -> Array(String?) | Tuple(String, String))
       response = @http_client.get(uri)
       case response.status_code
       when 301
         get response.headers["Location"], &block
       when 200
-        block.call(response)
+        parsed = XML.parse_html(response.body)
+        block.call(parsed)
       end
     rescue IO::Timeout
       # TODO: naive infinite retry, it will loop infinitely if the link really doesn't exist

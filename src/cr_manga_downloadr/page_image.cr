@@ -3,23 +3,24 @@ require "xml"
 
 module CrMangaDownloadr
   class PageImage < DownloadrClient
-    def initialize(@domain, @chapter_link : String, @page_link : String)
-      super(@domain)
-    end
-
-    def fetch
-      get "#{@chapter_link}/#{@page_link}" do |response|
-        html = XML.parse_html(response.body)
+    def fetch(chapter_link : String, page_link : String)
+      get "#{chapter_link}/#{page_link}" do |html|
         images = html.xpath("//img[contains(@id, 'img')]").as(XML::NodeSet)
 
         image_alt = images[0]["alt"]
-        tokens = image_alt.try &.match(/^(.*?)\s\-\s(.*?)$/)
-
         image_src = images[0]["src"]
-        uri = ( URI.parse(image_src as String).try &.path || "")
-        extension = File.extname(uri)
 
-        {tokens.try &.[](1), "#{tokens.try &.[](2)}#{extension}", image_src}
+        if image_alt && image_src
+          extension      = image_src.split(".").last
+          list           = image_alt.split(" ").reverse
+          title_name     = list[4..-1].join(" ")
+          chapter_number = list[3].rjust(5, '0')
+          page_number    = list[0].rjust(5, '0')
+
+          {image_src, "#{title_name}-Chap-#{chapter_number}-Pg-#{page_number}.#{extension}"}
+        else
+          raise Exception.new("Couldn't find proper metadata alt in the image tag")
+        end
       end
     end
   end

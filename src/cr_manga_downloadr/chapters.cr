@@ -8,8 +8,7 @@ module CrMangaDownloadr
     end
 
     def fetch
-      get @root_uri do |response|
-        html = XML.parse_html(response.body)
+      get @root_uri do |html|
         nodes = html.xpath_nodes("//table[contains(@id, 'listing')]//td//a/@href")
         nodes.map &.text
       end
