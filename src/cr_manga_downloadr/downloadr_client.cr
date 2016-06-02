@@ -2,7 +2,7 @@ require "http/client"
 require "xml"
 
 module CrMangaDownloadr
-  class DownloadrClient
+  class DownloadrClient(T)
     @http_client : HTTP::Client
     def initialize(@domain : String)
       @http_client = HTTP::Client.new(@domain).tap do |c|
@@ -16,7 +16,7 @@ module CrMangaDownloadr
       @http_client.try &.close
     end
 
-    def get(uri : String, &block : XML::Node -> Array(String?) | Tuple(String, String))
+    def get(uri : String, &block : XML::Node -> T)
       response = @http_client.get(uri)
       case response.status_code
       when 301

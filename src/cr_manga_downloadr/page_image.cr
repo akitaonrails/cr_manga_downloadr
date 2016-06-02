@@ -1,10 +1,11 @@
 require "./downloadr_client"
 require "xml"
+require "uri"
 
 module CrMangaDownloadr
-  class PageImage < DownloadrClient
-    def fetch(chapter_link : String, page_link : String)
-      get "#{chapter_link}/#{page_link}" do |html|
+  class PageImage < DownloadrClient(CrMangaDownloadr::Image)
+    def fetch(page_link : String)
+      get page_link do |html|
         images = html.xpath("//img[contains(@id, 'img')]").as(XML::NodeSet)
 
         image_alt = images[0]["alt"]
@@ -17,7 +18,8 @@ module CrMangaDownloadr
           chapter_number = list[3].rjust(5, '0')
           page_number    = list[0].rjust(5, '0')
 
-          {image_src, "#{title_name}-Chap-#{chapter_number}-Pg-#{page_number}.#{extension}"}
+          uri = URI.parse(image_src)
+          CrMangaDownloadr::Image.new(uri.host as String, uri.path as String, "#{title_name}-Chap-#{chapter_number}-Pg-#{page_number}.#{extension}")
         else
           raise Exception.new("Couldn't find proper metadata alt in the image tag")
         end

@@ -8,7 +8,7 @@ describe CrMangaDownloadr::Pages do
     pages = CrMangaDownloadr::Pages.new("www.mangareader.net").fetch("/naruto/1")
 
     (pages.try &.size).should eq(53)
-    (pages.try &.first).should eq("1")
-    (pages.try &.last).should eq("53")
+    (pages.try &.first).should eq("/naruto/1/1")
+    (pages.try &.last).should eq("/naruto/1/53")
   end
 end
