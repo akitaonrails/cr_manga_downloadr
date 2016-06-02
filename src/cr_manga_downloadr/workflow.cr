@@ -11,20 +11,16 @@ module CrMangaDownloadr
 
     private def fetch_pages(chapters : Array(String))
       puts "Fetching pages from all chapters ..."
-      pages_engine  = CrMangaDownloadr::Pages.new(@config.domain)
-      pages_channel = Channel(Array(String)).new
-      pages         = [] of String
-      chapters.each_slice(@config.download_batch_size) do |chapters_slice|
-        chapters_slice.each do |chapter_link|
-          spawn {
-            links = pages_engine.fetch(chapter_link)
-            pages_channel.send(links as Array(String))
-          }
+      pages = [] of String
+      chapters.each_slice(@config.download_batch_size) do |batch|
+        engine  = CrMangaDownloadr::Pages.new(@config.domain)
+        channel = Channel(Array(String)).new
+        batch.each do |link|
+          spawn { channel.send(engine.fetch(link) as Array(String)) }
         end
-        chapters_slice.size.times do
-          pages = pages.concat(pages_channel.receive)
-        end
+        batch.size.times { pages = pages.concat(channel.receive) }
         puts "Pages links fetched so far: #{pages.try &.size}"
+        channel.close
       end
       puts "Number of Pages: #{pages.try &.size}"
       pages
@@ -32,20 +28,16 @@ module CrMangaDownloadr
 
     private def fetch_images(pages : Array(String))
       puts "Feching the Image URLs from each Page ..."
-      image_engine   = CrMangaDownloadr::PageImage.new(@config.domain)
-      images_channel = Channel(Image).new
       images         = [] of Image
-      pages.each_slice(@config.download_batch_size) do |pages_slice|
-        pages_slice.each do |page_link|
-          spawn {
-            links = image_engine.fetch(page_link)
-            images_channel.send(links as Image)
-          }
+      pages.each_slice(@config.download_batch_size) do |batch|
+        engine   = CrMangaDownloadr::PageImage.new(@config.domain)
+        channel = Channel(Image).new
+        batch.each do |link|
+          spawn { channel.send(engine.fetch(link) as Image) }
         end
-        pages_slice.size.times do
-          images << images_channel.receive
-        end
+        batch.size.times { images << channel.receive }
         puts "Images links fetched so far: #{images.try &.size}"
+        channel.close
       end
       puts "Number of Images: #{images.try &.size}"
       images
@@ -53,19 +45,18 @@ module CrMangaDownloadr
 
     private def download_images(images : Array(Image))
       puts "Downloading each image ..."
-      downloads_channel = Channel(String).new
       downloads         = [] of String
-      images.each_slice(@config.download_batch_size) do |images_slice|
-        images_slice.each do |image|
+      images.each_slice(@config.download_batch_size) do |batch|
+        channel = Channel(String).new
+        batch.each do |image|
           spawn {
             image_file = File.join(@config.download_directory, image.filename)
             CrMangaDownloadr::ImageDownloader.new(image.host).fetch(image.path, image_file)
-            downloads_channel.send image_file
+            channel.send image_file
           }
         end
-        images_slice.size.times do
-          downloads << downloads_channel.receive
-        end
+        batch.size.times { downloads << channel.receive }
+        channel.close
         puts "Images downloaded so far: #{downloads.try &.size}"
       end
       puts "Number of images downloaded: #{downloads.try &.size}"
@@ -73,6 +64,7 @@ module CrMangaDownloadr
     end
 
     def run
+      `mkdir -p #{@config.download_directory}`
       chapters = fetch_chapters
       if chapters
         pages = fetch_pages(chapters)

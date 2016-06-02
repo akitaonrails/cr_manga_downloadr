@@ -15,20 +15,25 @@ I also did a better structured Elixir version here:
 To set up the development environment install the dependencies:
 
     crystal deps
-
-TODO: not finished yet
+    crystal build src/cr_manga_downloadr.cr --release
 
 ## Usage
 
-TODO: not finished yet
+Once you have the compiled binary just use like this:
+
+    ./cr_manga_downloadr -u http://www.mangareader.net/onepunch-man -d /tmp/onepunch-man
+
+In this example, all the pages of the "One Punch Man" will be downloaded to the directory "/tmp/onepunch-man" and they will have the following filename format:
+
+    /tmp/onepunch-man/Onepunch-Man-Chap-00038-Pg-00011.jpg
+
+Chapters and Pages numbers will be properly left-padded with zeroes so the filesystem can sort them correctly.
 
 ## Development
 
 You can run the specs like this:
 
     crystal spec
-
-TODO: not finished yet
 
 ## Contributing
 
