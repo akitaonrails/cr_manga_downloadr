@@ -12,6 +12,10 @@ I also did a better structured Elixir version here:
 
 ## Installation
 
+You will need to install ImageMagick in your system (to resize images to Kindle format and merge them into PDF volumes). Refer to your system's particular install. In Ubuntu, simply do:
+
+    sudo apt-get install imagemagick
+
 To set up the development environment install the dependencies:
 
     crystal deps

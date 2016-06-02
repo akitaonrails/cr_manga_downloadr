@@ -28,7 +28,7 @@ end
 
 if opt_manga_root_uri.size > 0
   root_uri = URI.parse(opt_manga_root_uri)
-  config = CrMangaDownloadr::Config.new(root_uri.host as String, root_uri.path as String, opt_manga_directory, 50)
+  config = CrMangaDownloadr::Config.new(root_uri.host as String, root_uri.path as String, opt_manga_directory, 50, "600x800", 250)
   workflow = CrMangaDownloadr::Workflow.new(config)
   workflow.run
 end
