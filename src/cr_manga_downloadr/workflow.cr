@@ -1,33 +1,57 @@
+require "cr_chainable_methods"
+include CrChainableMethods::Pipe
+
 module CrMangaDownloadr
+
   class Workflow
     def initialize(@config : Config); end
 
+    def run
+      # FIXME: didn't find Ruby's equivalent for FileUtils.mkdir_p
+      `mkdir -p #{@config.download_directory}`
+
+      pipe fetch_chapters
+        .>> fetch_pages
+        .>> fetch_images
+        .>> download_images
+        .>> optimize_images
+        .>> prepare_volumes
+
+       "Done!"
+    end
+
     private def fetch_chapters
       puts "Fetching chapters ..."
-      chapters = CrMangaDownloadr::Chapters.new(@config.domain, @config.root_uri).fetch
+      chapters = Chapters.new(@config.domain, @config.root_uri).fetch
       puts "Number of Chapters: #{chapters.try &.size}"
       chapters
     end
 
-    private def fetch_pages(chapters : Array(String))
-      puts "Fetching pages from all chapters ..."
-      reactor = Concurrency(String, String, Pages).new(@config)
-      reactor.fetch(chapters) do |link, engine|
-        engine.fetch(link) as Array(String)
+    private def fetch_pages(chapters : Array(String)?)
+      if chapters
+        puts "Fetching pages from all chapters ..."
+        reactor = Concurrency(String, String, Pages).new(@config)
+        reactor.fetch(chapters) do |link, engine|
+          if engine
+            engine.fetch(link) as Array(String)
+          end
+        end
       end
     end
 
-    private def fetch_images(pages : Array(String))
+    private def fetch_images(pages : Array(String)?)
       puts "Feching the Image URLs from each Page ..."
       reactor = Concurrency(String, Image, PageImage).new(@config)
       reactor.fetch(pages) do |link, engine|
-        [ engine.fetch(link) as Image ]
+        if engine
+          [ engine.fetch(link) as Image ]
+        end
       end
     end
 
-    private def download_images(images : Array(Image))
+    private def download_images(images : Array(Image)?)
       puts "Downloading each image ..."
-      reactor = Concurrency(Image, String, ImageDownloader).new(@config)
+      reactor = Concurrency(Image, String, ImageDownloader).new(@config, false)
       reactor.fetch(images) do |image, engine|
         image_file = File.join(@config.download_directory, image.filename)
         unless File.exists?(image_file)
@@ -37,9 +61,10 @@ module CrMangaDownloadr
       end
     end
 
-    private def optimize_images
+    private def optimize_images(downloads : Array(String))
       puts "Running mogrify to convert all images down to Kindle supported size (600x800)"
       `mogrify -resize #{@config.image_dimensions} #{@config.download_directory}/*.jpg`
+      downloads
     end
 
     private def prepare_volumes(downloads : Array(String))
@@ -61,26 +86,6 @@ module CrMangaDownloadr
 
         index += 1
       end
-    end
-
-    def run
-      # FIXME: didn't find Ruby's equivalent for FileUtils.mkdir_p
-      `mkdir -p #{@config.download_directory}`
-      chapters = fetch_chapters
-      if chapters
-        pages = fetch_pages(chapters)
-        if pages
-          images = fetch_images(pages)
-          if images
-            downloads = download_images(images)
-            if downloads
-              optimize_images
-              prepare_volumes(downloads)
-            end
-          end
-        end
-      end
-      puts "Done!"
     end
   end
 end

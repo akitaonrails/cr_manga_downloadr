@@ -6,6 +6,10 @@ authors:
 
 license: MIT
 
+dependencies:
+  cr_chainable_methods:
+    github: akitaonrails/cr_chainable_methods
+
 development_dependencies:
   webmock:
     github: manastech/webmock.cr
