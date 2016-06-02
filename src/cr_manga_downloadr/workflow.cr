@@ -2,7 +2,6 @@ require "cr_chainable_methods"
 include CrChainableMethods::Pipe
 
 module CrMangaDownloadr
-
   class Workflow
     def initialize(@config : Config); end
 
@@ -17,7 +16,7 @@ module CrMangaDownloadr
         .>> optimize_images
         .>> prepare_volumes
 
-       "Done!"
+      puts "Done!"
     end
 
     private def fetch_chapters
@@ -28,14 +27,10 @@ module CrMangaDownloadr
     end
 
     private def fetch_pages(chapters : Array(String)?)
-      if chapters
-        puts "Fetching pages from all chapters ..."
-        reactor = Concurrency(String, String, Pages).new(@config)
-        reactor.fetch(chapters) do |link, engine|
-          if engine
-            engine.fetch(link) as Array(String)
-          end
-        end
+      puts "Fetching pages from all chapters ..."
+      reactor = Concurrency(String, String, Pages).new(@config)
+      reactor.fetch(chapters) do |link, engine|
+        engine.try( &.fetch(link) )
       end
     end
 
@@ -43,16 +38,14 @@ module CrMangaDownloadr
       puts "Feching the Image URLs from each Page ..."
       reactor = Concurrency(String, Image, PageImage).new(@config)
       reactor.fetch(pages) do |link, engine|
-        if engine
-          [ engine.fetch(link) as Image ]
-        end
+        [ engine.try( &.fetch(link) ) as Image ]
       end
     end
 
     private def download_images(images : Array(Image)?)
       puts "Downloading each image ..."
       reactor = Concurrency(Image, String, ImageDownloader).new(@config, false)
-      reactor.fetch(images) do |image, engine|
+      reactor.fetch(images) do |image, _|
         image_file = File.join(@config.download_directory, image.filename)
         unless File.exists?(image_file)
           ImageDownloader.new(image.host).fetch(image.path, image_file)
