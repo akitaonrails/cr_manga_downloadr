@@ -31,9 +31,5 @@ module CrMangaDownloadr
       sleep 1
       get(uri, &block)
     end
-
-    def self.channel
-      Channel(T).new
-    end
   end
 end

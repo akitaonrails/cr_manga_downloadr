@@ -11,55 +11,30 @@ module CrMangaDownloadr
 
     private def fetch_pages(chapters : Array(String))
       puts "Fetching pages from all chapters ..."
-      pages = [] of String
-      chapters.each_slice(@config.download_batch_size) do |batch|
-        engine  = Pages.new(@config.domain)
-        channel = Pages.channel
-        batch.each do |link|
-          spawn { channel.send(engine.fetch(link) as Array(String)) }
-        end
-        batch.size.times { pages = pages.concat(channel.receive) }
-        puts "Pages links fetched so far: #{pages.try &.size}"
-        channel.close
+      reactor = Concurrency(String, String, Pages).new(@config)
+      reactor.fetch(chapters) do |link, engine|
+        engine.fetch(link) as Array(String)
       end
-      pages
     end
 
     private def fetch_images(pages : Array(String))
       puts "Feching the Image URLs from each Page ..."
-      images = [] of Image
-      pages.each_slice(@config.download_batch_size) do |batch|
-        engine   = PageImage.new(@config.domain)
-        channel = PageImage.channel
-        batch.each do |link|
-          spawn { channel.send(engine.fetch(link) as Image) }
-        end
-        batch.size.times { images << channel.receive }
-        puts "Images links fetched so far: #{images.try &.size}"
-        channel.close
+      reactor = Concurrency(String, Image, PageImage).new(@config)
+      reactor.fetch(pages) do |link, engine|
+        [ engine.fetch(link) as Image ]
       end
-      images
     end
 
     private def download_images(images : Array(Image))
       puts "Downloading each image ..."
-      downloads = [] of String
-      images.each_slice(@config.download_batch_size) do |batch|
-        channel = ImageDownloader.channel
-        batch.each do |image|
-          spawn {
-            image_file = File.join(@config.download_directory, image.filename)
-            unless File.exists?(image_file)
-              ImageDownloader.new(image.host).fetch(image.path, image_file)
-            end
-            channel.send image_file
-          }
+      reactor = Concurrency(Image, String, ImageDownloader).new(@config)
+      reactor.fetch(images) do |image, engine|
+        image_file = File.join(@config.download_directory, image.filename)
+        unless File.exists?(image_file)
+          ImageDownloader.new(image.host).fetch(image.path, image_file)
         end
-        batch.size.times { downloads << channel.receive }
-        channel.close
-        puts "Images downloaded so far: #{downloads.try &.size}"
+        [ image_file ]
       end
-      downloads
     end
 
     private def optimize_images
