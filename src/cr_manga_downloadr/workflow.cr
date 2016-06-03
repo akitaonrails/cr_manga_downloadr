@@ -6,8 +6,7 @@ module CrMangaDownloadr
     def initialize(@config : Config); end
 
     def run
-      # FIXME: didn't find Ruby's equivalent for FileUtils.mkdir_p
-      `mkdir -p #{@config.download_directory}`
+      Dir.mkdir_p @config.download_directory
 
       pipe fetch_chapters
         .>> fetch_pages
@@ -66,7 +65,7 @@ module CrMangaDownloadr
       downloads.each_slice(@config.pages_per_volume) do |batch|
         volume_directory = "#{@config.download_directory}/#{manga_name}_#{index}"
         volume_file      = "#{volume_directory}.pdf"
-        `mkdir -p #{volume_directory}`
+        Dir.mkdir_p volume_directory
 
         puts "Moving images to #{volume_directory} ..."
         batch.each do |file|
