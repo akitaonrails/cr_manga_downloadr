@@ -34,7 +34,7 @@ module CrMangaDownloadr
     end
 
     private def fetch_images(pages : Array(String)?)
-      puts "Feching the Image URLs from each Page ..."
+      puts "Fetching the Image URLs from each Page ..."
       reactor = Concurrency(String, Image, PageImage).new(@config)
       reactor.fetch(pages) do |link, engine|
         [ engine.try( &.fetch(link) ) as Image ]
@@ -47,7 +47,9 @@ module CrMangaDownloadr
       reactor.fetch(images) do |image, _|
         image_file = File.join(@config.download_directory, image.filename)
         unless File.exists?(image_file)
-          ImageDownloader.new(image.host).fetch(image.path, image_file)
+          engine = ImageDownloader.new(image.host)
+          engine.fetch(image.path, image_file)
+          engine.close
         end
         [ image_file ]
       end

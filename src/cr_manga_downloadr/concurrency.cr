@@ -9,10 +9,11 @@ module CrMangaDownloadr
         batch.each do |item|
           spawn {
             engine  = if @turn_on_engine
-                    C.new(@config.domain)
-                  end
+                        C.new(@config.domain)
+                      end
             reply = block.call(item, engine)
             channel.send(reply)
+            engine.try &.close
           }
         end
         batch.size.times do

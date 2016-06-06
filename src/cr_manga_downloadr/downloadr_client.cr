@@ -12,8 +12,12 @@ module CrMangaDownloadr
       end
     end
 
-    def finalize
+    def close
       @http_client.try &.close
+    end
+
+    def finalize
+      close
     end
 
     def get(uri : String, &block : XML::Node -> T)
