@@ -17,7 +17,7 @@ module CrMangaDownloadr
     end
 
     def get(uri : String, &block : XML::Node -> T)
-      response = @http_client.get(uri)
+      response = @http_client.get(uri, headers: HTTP::Headers{ "User-Agent": CrMangaDownloadr::USER_AGENT })
       case response.status_code
       when 301
         get response.headers["Location"], &block
@@ -28,6 +28,7 @@ module CrMangaDownloadr
     rescue IO::Timeout
       # TODO: naive infinite retry, it will loop infinitely if the link really doesn't exist
       # so should have a way to control the amount of retries per link
+      puts "Sleeping over #{uri}"
       sleep 1
       get(uri, &block)
     end

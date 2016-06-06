@@ -5,13 +5,12 @@ module CrMangaDownloadr
     def fetch(collection : Array(A)?, &block : A, C? -> Array(B)?) : Array(B)?
       results = [] of B
       collection.try &.each_slice(@config.download_batch_size) do |batch|
-        engine  = if @turn_on_engine
-                    C.new(@config.domain)
-                  end
-
         channel = Channel(Array(B)?).new
         batch.each do |item|
           spawn {
+            engine  = if @turn_on_engine
+                    C.new(@config.domain)
+                  end
             reply = block.call(item, engine)
             channel.send(reply)
           }

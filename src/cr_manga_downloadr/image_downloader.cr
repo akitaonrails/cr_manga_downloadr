@@ -4,7 +4,7 @@ module CrMangaDownloadr
   class ImageDownloader < DownloadrClient(String)
     def fetch(image_src : String, filename : String)
       File.delete(filename) if File.exists?(filename)
-      response = @http_client.get(image_src)
+      response = @http_client.get(image_src, headers: HTTP::Headers{ "User-Agent": CrMangaDownloadr::USER_AGENT })
       case response.status_code
       when 301
         fetch(response.headers["Location"], filename)
