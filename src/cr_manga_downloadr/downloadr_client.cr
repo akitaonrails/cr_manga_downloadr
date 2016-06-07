@@ -3,7 +3,7 @@ require "xml"
 require "openssl"
 
 module CrMangaDownloadr
-  class DownloadrClient(T)
+  class DownloadrClient
     @http_client : HTTP::Client
     def initialize(@domain : String, @cache_http = false)
       @http_client = HTTP::Client.new(@domain).tap do |c|
@@ -17,11 +17,7 @@ module CrMangaDownloadr
       @http_client.try &.close
     end
 
-    def finalize
-      close
-    end
-
-    def get(uri : String, &block : XML::Node -> T)
+    def get(uri : String)
       cache_path = "/tmp/cr_manga_downloadr_cache/#{cache_filename(uri)}"
       response = if @cache_http && File.exists?(cache_path)
         body = File.read(cache_path)
@@ -30,24 +26,27 @@ module CrMangaDownloadr
         @http_client.get(uri, headers: HTTP::Headers{ "User-Agent": CrMangaDownloadr::USER_AGENT })
       end
 
-      case response.status_code
-      when 301
-        get response.headers["Location"], &block
-      when 200
-        if @cache_http && !File.exists?(cache_path)
-          File.open(cache_path, "w") do |f|
-            f.print response.body
+      while true
+        begin
+          response = @http_client.get(uri, headers: HTTP::Headers{"User-Agent": CrMangaDownloadr::USER_AGENT})
+          case response.status_code
+          when 301
+            uri = response.headers["Location"]
+          when 200
+            if @cache_http && !File.exists?(cache_path)
+              File.open(cache_path, "w") do |f|
+                f.print response.body
+              end
+            end
+            return XML.parse_html(response.body)
           end
+        rescue IO::Timeout
+          # TODO: naive infinite retry, it will loop infinitely if the link really doesn't exist
+          # so should have a way to control the amount of retries per link
+          puts "Sleeping over #{uri}"
+          sleep 1
         end
-        parsed = XML.parse_html(response.body)
-        block.call(parsed)
       end
-    rescue IO::Timeout
-      # TODO: naive infinite retry, it will loop infinitely if the link really doesn't exist
-      # so should have a way to control the amount of retries per link
-      puts "Sleeping over #{uri}"
-      sleep 1
-      get(uri, &block)
     end
 
     private def cache_filename(uri)
