@@ -4,7 +4,7 @@ require "uri"
 
 opt_manga_directory = "/tmp"
 opt_manga_root_uri = ""
-opt_batch_size = 40
+opt_batch_size = 60
 opt_resize_format = "600x800"
 opt_pages_per_volume = 250
 
