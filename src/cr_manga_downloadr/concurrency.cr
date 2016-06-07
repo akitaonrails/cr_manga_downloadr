@@ -1,26 +1,24 @@
 module CrMangaDownloadr
-  class Concurrency(A, B, C)
+  struct Concurrency
     def initialize(@config : Config, @turn_on_engine = true); end
 
-    def fetch(collection : Array(A)?, &block : A, C? -> Array(B)?) : Array(B)?
+    def fetch(collection : Array(A)?, engine_class : E.class, &block : A, E? -> Array(B)?) : Array(B)
       results = [] of B
       collection.try &.each_slice(@config.download_batch_size) do |batch|
-        channel = Channel(Array(B)?).new
+        channel = Channel(Array(B)).new
         batch.each do |item|
           spawn {
-            engine  = if @turn_on_engine
-                        C.new(@config.domain)
-                      end
+            engine = if @turn_on_engine
+                       engine_class.new(@config.domain)
+                     end
             reply = block.call(item, engine)
-            channel.send(reply)
+            channel.send(reply) if reply
             engine.try &.close
           }
         end
         batch.size.times do
           reply = channel.receive
-          if reply
-            results.concat(reply.flatten)
-          end
+          results.concat(reply)
         end
         channel.close
         puts "Processed so far: #{results.try &.size}"

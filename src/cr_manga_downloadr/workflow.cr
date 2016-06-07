@@ -27,24 +27,24 @@ module CrMangaDownloadr
 
     private def fetch_pages(chapters : Array(String)?)
       puts "Fetching pages from all chapters ..."
-      reactor = Concurrency(String, String, Pages).new(@config)
-      reactor.fetch(chapters) do |link, engine|
-        engine.try( &.fetch(link) )
+      reactor = Concurrency.new(@config)
+      reactor.fetch(chapters, Pages) do |link, engine|
+        engine.try(&.fetch(link))
       end
     end
 
     private def fetch_images(pages : Array(String)?)
       puts "Fetching the Image URLs from each Page ..."
-      reactor = Concurrency(String, Image, PageImage).new(@config)
-      reactor.fetch(pages) do |link, engine|
-        [ engine.try( &.fetch(link) ) as Image ]
+      reactor = Concurrency.new(@config)
+      reactor.fetch(pages, PageImage) do |link, engine|
+        [ engine.try(&.fetch(link)).as(Image) ]
       end
     end
 
     private def download_images(images : Array(Image)?)
       puts "Downloading each image ..."
-      reactor = Concurrency(Image, String, ImageDownloader).new(@config, false)
-      reactor.fetch(images) do |image, _|
+      reactor = Concurrency.new(@config, false)
+      reactor.fetch(images, ImageDownloader) do |image, _|
         image_file = File.join(@config.download_directory, image.filename)
         unless File.exists?(image_file)
           engine = ImageDownloader.new(image.host)
@@ -66,7 +66,7 @@ module CrMangaDownloadr
       index = 1
       downloads.each_slice(@config.pages_per_volume) do |batch|
         volume_directory = "#{@config.download_directory}/#{manga_name}_#{index}"
-        volume_file      = "#{volume_directory}.pdf"
+        volume_file = "#{volume_directory}.pdf"
         Dir.mkdir_p volume_directory
 
         puts "Moving images to #{volume_directory} ..."
