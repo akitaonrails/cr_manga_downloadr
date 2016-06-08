@@ -33,11 +33,23 @@ In this example, all the pages of the "One Punch Man" will be downloaded to the 
 
 Chapters and Pages numbers will be properly left-padded with zeroes so the filesystem can sort them correctly.
 
+You can also use the flag `--cache` or just `-c` to turn on the HTTP cache, that way you can Ctrl-C in the middle of the process and resume later where you left off.
+
 ## Development
 
 You can run the specs like this:
 
     crystal spec
+
+If you want to benchmark against the other implementations of the downloader you can use the test mode like this:
+
+    time ./cr_manga_downloadr --test
+
+And you can test with cache turned on as well:
+
+    time ./cr_manga_downloadr --test --cache
+
+This will use the One-Punch Man manga as the test sample.
 
 ## Contributing
 

@@ -1,10 +1,11 @@
 require "http/client"
 require "xml"
+require "openssl"
 
 module CrMangaDownloadr
   class DownloadrClient(T)
     @http_client : HTTP::Client
-    def initialize(@domain : String)
+    def initialize(@domain : String, @cache_http = false)
       @http_client = HTTP::Client.new(@domain).tap do |c|
         c.connect_timeout = 30.seconds
         c.dns_timeout = 10.seconds
@@ -21,11 +22,23 @@ module CrMangaDownloadr
     end
 
     def get(uri : String, &block : XML::Node -> T)
-      response = @http_client.get(uri, headers: HTTP::Headers{ "User-Agent": CrMangaDownloadr::USER_AGENT })
+      cache_path = "/tmp/cr_manga_downloadr_cache/#{cache_filename(uri)}"
+      response = if @cache_http && File.exists?(cache_path)
+        body = File.read(cache_path)
+        HTTP::Client::Response.new(200, body)
+      else
+        @http_client.get(uri, headers: HTTP::Headers{ "User-Agent": CrMangaDownloadr::USER_AGENT })
+      end
+
       case response.status_code
       when 301
         get response.headers["Location"], &block
       when 200
+        if @cache_http && !File.exists?(cache_path)
+          File.open(cache_path, "w") do |f|
+            f.print response.body
+          end
+        end
         parsed = XML.parse_html(response.body)
         block.call(parsed)
       end
@@ -35,6 +48,10 @@ module CrMangaDownloadr
       puts "Sleeping over #{uri}"
       sleep 1
       get(uri, &block)
+    end
+
+    private def cache_filename(uri)
+      OpenSSL::MD5.hash(uri).join("")
     end
   end
 end

@@ -3,8 +3,8 @@ require "xml"
 
 module CrMangaDownloadr
   class Chapters < DownloadrClient(Array(String))
-    def initialize(@domain, @root_uri : String)
-      super(@domain)
+    def initialize(@domain, @root_uri : String, @cache_http = false)
+      super(@domain, @cache_http)
     end
 
     def fetch

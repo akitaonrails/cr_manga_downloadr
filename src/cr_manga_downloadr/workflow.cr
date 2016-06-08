@@ -18,9 +18,20 @@ module CrMangaDownloadr
       puts "Done!"
     end
 
+    def run_tests
+      Dir.mkdir_p "/tmp/cr_manga_downloadr_cache"
+
+      # the tests don't need to actually download, optimize and compile the pdfs
+      pipe fetch_chapters
+        .>> fetch_pages
+        .>> fetch_images
+
+      puts "Done!"
+    end
+
     private def fetch_chapters
       puts "Fetching chapters ..."
-      chapters = Chapters.new(@config.domain, @config.root_uri).fetch
+      chapters = Chapters.new(@config.domain, @config.root_uri, @config.cache_http).fetch
       puts "Number of Chapters: #{chapters.try &.size}"
       chapters
     end
