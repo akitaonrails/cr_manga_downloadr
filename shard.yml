@@ -9,6 +9,8 @@ license: MIT
 dependencies:
   cr_chainable_methods:
     github: akitaonrails/cr_chainable_methods
+  fiberpool:
+    github: akitaonrails/fiberpool
 
 development_dependencies:
   webmock:

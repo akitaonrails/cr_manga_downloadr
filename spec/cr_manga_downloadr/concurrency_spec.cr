@@ -12,19 +12,4 @@ describe CrMangaDownloadr::Concurrency do
     ( (1..10_000).to_a - results.try(&.flatten) ).should eq([] of Int32)
     results.size.should eq(10_000)
   end
-
-  it "test the inner worker/pool implementation" do
-    config = CrMangaDownloadr::Config.new("foo.com", "/", "/tmp", 10, "", 10, false)
-    engine = CrMangaDownloadr::Concurrency(Int32, Int32, CrMangaDownloadr::Pages).new(config, false)
-    queue = (1..100).to_a
-    results = [] of Int32
-    engine.pool(config.download_batch_size) do
-      if queue.size > 0
-        results << queue.pop
-      else
-        raise CrMangaDownloadr::ConcurrencyBreakException.new
-      end
-    end
-    results.size.should eq(100)
-  end
 end
