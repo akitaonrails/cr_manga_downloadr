@@ -6,7 +6,7 @@ shards:
 
   fiberpool:
     github: akitaonrails/fiberpool
-    commit: 3ba2f1c69d008fdce0c14d7032b2e951e1016a30
+    commit: 9970be3f1e2980ebf89a734b39d20fa71a4aea3c
 
   webmock:
     github: manastech/webmock.cr
