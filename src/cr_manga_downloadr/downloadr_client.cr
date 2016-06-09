@@ -19,16 +19,15 @@ module CrMangaDownloadr
 
     def get(uri : String)
       cache_path = "/tmp/cr_manga_downloadr_cache/#{cache_filename(uri)}"
-      response = if @cache_http && File.exists?(cache_path)
-        body = File.read(cache_path)
-        HTTP::Client::Response.new(200, body)
-      else
-        @http_client.get(uri, headers: HTTP::Headers{ "User-Agent": CrMangaDownloadr::USER_AGENT })
-      end
-
       while true
         begin
-          response = @http_client.get(uri, headers: HTTP::Headers{"User-Agent": CrMangaDownloadr::USER_AGENT})
+          response = if @cache_http && File.exists?(cache_path)
+            body = File.read(cache_path)
+            HTTP::Client::Response.new(200, body)
+          else
+            @http_client.get(uri, headers: HTTP::Headers{"User-Agent": CrMangaDownloadr::USER_AGENT})
+          end
+
           case response.status_code
           when 301
             uri = response.headers["Location"]

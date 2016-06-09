@@ -12,8 +12,9 @@ module CrMangaDownloadr
           engine = if @turn_on_engine
                      engine_class.new(@config.domain)
                    end
-          reply = block.call(item, engine)
-          results.concat(reply)
+          if reply = block.call(item, engine)
+            results.concat(reply)
+          end
         end
       end
       results
