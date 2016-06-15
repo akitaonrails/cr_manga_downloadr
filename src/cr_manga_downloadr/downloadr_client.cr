@@ -25,7 +25,7 @@ module CrMangaDownloadr
             body = File.read(cache_path)
             HTTP::Client::Response.new(200, body)
           else
-            @http_client.get(uri, headers: HTTP::Headers{"User-Agent": CrMangaDownloadr::USER_AGENT})
+            @http_client.get(uri, headers: HTTP::Headers{ "User-Agent" => CrMangaDownloadr::USER_AGENT })
           end
 
           case response.status_code
