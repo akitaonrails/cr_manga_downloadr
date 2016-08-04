@@ -10,7 +10,7 @@ module CrMangaDownloadr
         pool = Fiberpool.new(collection, @config.download_batch_size)
         pool.run do |item|
           engine = if @turn_on_engine
-                     engine_class.new(@config.domain)
+                     engine_class.new(@config.domain, @config.cache_http)
                    end
           if reply = block.call(item, engine)
             results.concat(reply)
