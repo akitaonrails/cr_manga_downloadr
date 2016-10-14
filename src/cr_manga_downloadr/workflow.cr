@@ -20,12 +20,17 @@ module CrMangaDownloadr
     end
 
     def run_tests
-      Dir.mkdir_p "/tmp/cr_manga_downloadr_cache"
+      tmp_dir = "/tmp/cr_manga_downloadr_cache"
+      if Dir.exists?(tmp_dir)
+      	Dir.rmdir tmp_dir
+      end
+      Dir.mkdir_p tmp_dir
 
       # the tests don't need to actually download, optimize and compile the pdfs
       pipe Steps.fetch_chapters(@config)
         .>> Steps.fetch_pages(@config)
         .>> Steps.fetch_images(@config)
+        .>> Steps.download_images(@config)
         .>> unwrap
 
       puts "Done!"
