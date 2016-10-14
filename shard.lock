@@ -2,11 +2,11 @@ version: 1.0
 shards:
   cr_chainable_methods:
     github: akitaonrails/cr_chainable_methods
-    commit: 5198f50c8a057fabc8a0e071e6529ad66fa19c11
+    commit: 03ab9f10ec79fab9840c01cc87738733dc5f3588
 
   fiberpool:
     github: akitaonrails/fiberpool
-    commit: 83b5bef6698163a5ff970818a225e061a2817f3d
+    commit: 9a7f2cf370800e016fc8d79df0395bc990ce63ad
 
   webmock:
     github: manastech/webmock.cr
