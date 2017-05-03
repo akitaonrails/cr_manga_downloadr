@@ -6,7 +6,7 @@ module CrMangaDownloadr
   class PageImage < DownloadrClient
     def fetch(page_link : String)
       html = get(page_link)
-      images = html.xpath("//img[contains(@id, 'img')]").as(XML::NodeSet)
+      images = html.as(XML::Node).xpath("//img[contains(@id, 'img')]").as(XML::NodeSet)
 
       image_alt = images[0]["alt"]
       image_src = images[0]["src"]

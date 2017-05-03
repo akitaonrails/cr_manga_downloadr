@@ -1,10 +1,10 @@
 require "fiberpool"
 
 module CrMangaDownloadr
-  struct Concurrency
+  struct Concurrency(A, B)
     def initialize(@config : Config); end
 
-    def fetch(collection : Array(A)?, engine_class : E.class, &block : A, E -> Array(B)?) : Array(B)
+    def fetch(collection : Array(A)?, engine_class : DownloadrClient.class, &block : A, DownloadrClient -> Array(B)?) : Array(B)
       results = [] of B
       if collection
         pool = Fiberpool.new(collection, @config.download_batch_size)

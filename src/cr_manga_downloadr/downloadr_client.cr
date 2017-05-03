@@ -13,6 +13,20 @@ module CrMangaDownloadr
       @http_client.try &.close
     end
 
+    # FIXME: must unify the several different fetch signatures
+
+    def fetch
+      raise "must implement"
+    end
+
+    def fetch(uri : String)
+      raise "must implement"
+    end
+
+    def fetch(uri : String, filename : String)
+      raise "must implement"
+    end
+
     def http_client!
       HTTP::Client.new(@domain).tap do |c|
         c.connect_timeout = 30.seconds
@@ -28,6 +42,8 @@ module CrMangaDownloadr
     end
 
     def get(uri : String, binary = false)
+      # TODO move this cache directory to the config object
+      Dir.mkdir_p("/tmp/cr_manga_downloadr_cache") unless Dir.exists?("/tmp/cr_manga_downloadr_cache")
       cache_path = "/tmp/cr_manga_downloadr_cache/#{cache_filename(uri)}"
       while true
         begin

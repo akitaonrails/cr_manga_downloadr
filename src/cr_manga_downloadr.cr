@@ -9,7 +9,7 @@ opt_batch_size = 60
 opt_resize_format = "600x800"
 opt_pages_per_volume = 250
 opt_run_tests = false
-opt_cache_pages = false
+opt_cache_pages = true
 
 OptionParser.parse! do |opts|
   # Set a banner, displayed at the top
