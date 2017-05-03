@@ -63,13 +63,12 @@ module CrMangaDownloadr
 
     def self.download_images(images : Array(Image)?, config : Config)
       puts "Downloading each image ..."
-      reactor = Concurrency.new(config, false)
-      reactor.fetch(images, ImageDownloader) do |image, _|
+      reactor = Concurrency.new(config)
+      reactor.fetch(images, ImageDownloader) do |image, engine|
         image_file = File.join(config.download_directory, image.filename)
         unless File.exists?(image_file)
-          engine = ImageDownloader.new(image.host)
+          engine.domain = image.host
           engine.fetch(image.path, image_file)
-          engine.close
         end
         [ image_file ]
       end

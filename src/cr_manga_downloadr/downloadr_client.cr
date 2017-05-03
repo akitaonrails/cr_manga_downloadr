@@ -6,15 +6,25 @@ module CrMangaDownloadr
   class DownloadrClient
     @http_client : HTTP::Client
     def initialize(@domain : String, @cache_http = false)
-      @http_client = HTTP::Client.new(@domain).tap do |c|
+      @http_client = http_client!
+    end
+
+    def close
+      @http_client.try &.close
+    end
+
+    def http_client!
+      HTTP::Client.new(@domain).tap do |c|
         c.connect_timeout = 30.seconds
         c.dns_timeout = 10.seconds
         c.read_timeout = 5.minutes
       end
     end
 
-    def close
-      @http_client.try &.close
+    def domain=(new_domain)
+      @domain = new_domain
+      close
+      @http_client = http_client!
     end
 
     def get(uri : String)
