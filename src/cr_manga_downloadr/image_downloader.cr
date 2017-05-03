@@ -3,19 +3,9 @@ require "./downloadr_client"
 module CrMangaDownloadr
   class ImageDownloader < DownloadrClient
     def fetch(image_src : String, filename : String)
+      cache_path = get(image_src, true)
       File.delete(filename) if File.exists?(filename)
-      response = @http_client.get(image_src, headers: HTTP::Headers{ "User-Agent" => CrMangaDownloadr::USER_AGENT })
-      case response.status_code
-      when 301
-        fetch(response.headers["Location"], filename)
-      when 200
-        File.open(filename, "w") do |f|
-          f.print response.body
-        end
-      end
-    rescue IO::Timeout
-      sleep 1
-      fetch(image_src, filename)
+      File.rename(cache_path, filename)
     end
   end
 end

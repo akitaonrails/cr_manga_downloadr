@@ -27,7 +27,7 @@ module CrMangaDownloadr
       @http_client = http_client!
     end
 
-    def get(uri : String)
+    def get(uri : String, binary = false)
       cache_path = "/tmp/cr_manga_downloadr_cache/#{cache_filename(uri)}"
       while true
         begin
@@ -47,7 +47,12 @@ module CrMangaDownloadr
                 f.print response.body
               end
             end
-            return XML.parse_html(response.body)
+
+            if binary
+              return cache_path
+            else
+              return XML.parse_html(response.body)
+            end
           end
         rescue IO::Timeout
           # TODO: naive infinite retry, it will loop infinitely if the link really doesn't exist
