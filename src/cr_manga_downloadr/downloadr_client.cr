@@ -58,7 +58,7 @@ module CrMangaDownloadr
           when 301
             uri = response.headers["Location"]
           when 200
-            if @cache_http && !File.exists?(cache_path)
+            if ( binary || @cache_http ) && !File.exists?(cache_path)
               File.open(cache_path, "w") do |f|
                 f.print response.body
               end
