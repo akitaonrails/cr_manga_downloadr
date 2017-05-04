@@ -5,7 +5,12 @@ require "openssl"
 module CrMangaDownloadr
   class DownloadrClient
     @http_client : HTTP::Client
-    def initialize(@domain : String, @cache_http = false)
+    @domain : String
+    @cache_http : Bool
+
+    def initialize(@config : CrMangaDownloadr::Config)
+      @domain = @config.domain
+      @cache_http = @config.cache_http
       @http_client = http_client!
     end
 
@@ -43,8 +48,8 @@ module CrMangaDownloadr
 
     def get(uri : String, binary = false)
       # TODO move this cache directory to the config object
-      Dir.mkdir_p("/tmp/cr_manga_downloadr_cache") unless Dir.exists?("/tmp/cr_manga_downloadr_cache")
-      cache_path = "/tmp/cr_manga_downloadr_cache/#{cache_filename(uri)}"
+      Dir.mkdir_p(@config.cache_directory) unless Dir.exists?(@config.cache_directory)
+      cache_path = File.join(@config.cache_directory, cache_filename(uri))
       while true
         begin
           response = if @cache_http && File.exists?(cache_path)

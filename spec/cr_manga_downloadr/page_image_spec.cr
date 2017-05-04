@@ -5,7 +5,8 @@ describe CrMangaDownloadr::PageImage do
     WebMock.stub(:get, "www.mangareader.net/naruto/662/2").
       to_return(status: 200, body: File.read("spec/fixtures/naruto_662_2.html"))
 
-    image = CrMangaDownloadr::PageImage.new("www.mangareader.net").fetch("/naruto/662/2")
+    config = CrMangaDownloadr::Config.new("www.mangareader.net", "", "", 10, "", 10, true, "/tmp")
+    image = CrMangaDownloadr::PageImage.new(config).fetch("/naruto/662/2")
 
     image.try(&.host).should eq("i8.mangareader.net")
     image.try(&.path).should eq("/naruto/662/naruto-4739563.jpg")

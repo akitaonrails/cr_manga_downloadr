@@ -10,6 +10,7 @@ opt_resize_format = "600x800"
 opt_pages_per_volume = 250
 opt_run_tests = false
 opt_cache_pages = false
+opt_cache_directory = "/tmp/cr_manga_downloadr_cache"
 
 OptionParser.parse! do |opts|
   # Set a banner, displayed at the top
@@ -56,7 +57,7 @@ end
 
 if opt_manga_root_uri.size > 0
   root_uri = URI.parse(opt_manga_root_uri)
-  config = CrMangaDownloadr::Config.new(root_uri.host.as(String), root_uri.path.as(String), opt_manga_directory, opt_batch_size, opt_resize_format, opt_pages_per_volume, opt_cache_pages)
+  config = CrMangaDownloadr::Config.new(root_uri.host.as(String), root_uri.path.as(String), opt_manga_directory, opt_batch_size, opt_resize_format, opt_pages_per_volume, opt_cache_pages, opt_cache_directory)
   workflow = CrMangaDownloadr::Workflow.new(config)
   if opt_run_tests
     puts Benchmark.measure("One-Punch Man test") {

@@ -1,4 +1,5 @@
 require "cr_chainable_methods"
+require "file_utils"
 include CrChainableMethods::Pipe
 
 module CrMangaDownloadr
@@ -20,11 +21,8 @@ module CrMangaDownloadr
     end
 
     def run_tests
-      tmp_dir = "/tmp/cr_manga_downloadr_cache"
-      if Dir.exists?(tmp_dir)
-      	Dir.rmdir tmp_dir
-      end
-      Dir.mkdir_p tmp_dir
+      FileUtils.rm_rf(@config.cache_directory) if Dir.exists?(@config.cache_directory)
+      Dir.mkdir_p @config.cache_directory
 
       # the tests don't need to actually download, optimize and compile the pdfs
       pipe Steps.fetch_chapters(@config)
@@ -40,31 +38,31 @@ module CrMangaDownloadr
   module Steps
     def self.fetch_chapters(config : Config)
       puts "Fetching chapters ..."
-      chapters = Chapters.new(config.domain, config.root_uri, config.cache_http).fetch
+      chapters = Chapters.new(config).fetch
       puts "Number of Chapters: #{chapters.try &.size}"
       chapters
     end
 
     def self.fetch_pages(chapters : Array(String)?, config : Config)
       puts "Fetching pages from all chapters ..."
-      reactor = Concurrency(String, String).new(config)
-      reactor.fetch(chapters, Pages) do |link, engine|
+      reactor = Concurrency(String, String).new(config, Pages)
+      reactor.fetch(chapters) do |link, engine|
         engine.try(&.fetch(link)).as(Array(String))
       end
     end
 
     def self.fetch_images(pages : Array(String)?, config : Config)
       puts "Fetching the Image URLs from each Page ..."
-      reactor = Concurrency(String, Image).new(config)
-      reactor.fetch(pages, PageImage) do |link, engine|
+      reactor = Concurrency(String, Image).new(config, PageImage)
+      reactor.fetch(pages) do |link, engine|
         [ engine.try(&.fetch(link)).as(Image) ]
       end
     end
 
     def self.download_images(images : Array(Image)?, config : Config)
       puts "Downloading each image ..."
-      reactor = Concurrency(Image, String).new(config)
-      reactor.fetch(images, ImageDownloader) do |image, engine|
+      reactor = Concurrency(Image, String).new(config, ImageDownloader)
+      reactor.fetch(images) do |image, engine|
         image_file = File.join(config.download_directory, image.filename)
         unless File.exists?(image_file)
           engine.domain = image.host
@@ -84,14 +82,14 @@ module CrMangaDownloadr
       manga_name = config.download_directory.split("/").try &.last
       index = 1
       downloads.each_slice(config.pages_per_volume) do |batch|
-        volume_directory = "#{config.download_directory}/#{manga_name}_#{index}"
+        volume_directory = File.join(config.download_directory, "#{manga_name}_#{index}")
         volume_file = "#{volume_directory}.pdf"
         Dir.mkdir_p volume_directory
 
         puts "Moving images to #{volume_directory} ..."
         batch.each do |file|
           destination_file = file.split("/").last
-          `mv #{file} #{volume_directory}/#{destination_file}`
+          File.rename(file, File.join(volume_directory, destination_file))
         end
 
         puts "Generating #{volume_file} ..."
