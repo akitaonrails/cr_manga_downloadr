@@ -2,7 +2,7 @@ require "../spec_helper"
 
 describe CrMangaDownloadr::Concurrency do
   it "should process a large queue of jobs in batches, concurrently and signal through a channel" do
-    config = CrMangaDownloadr::Config.new("foo.com", "/", "/tmp", 10, "", 10, false, "/tmp")
+    config = CrMangaDownloadr::Config.new("foo.com", "/")
     reactor = CrMangaDownloadr::Concurrency(Int32, Int32).new(config, CrMangaDownloadr::Pages)
     collection = ( 1..10_000 ).to_a
     results = reactor.fetch(collection) do |item, _|

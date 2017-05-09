@@ -19,7 +19,9 @@ module CrMangaDownloadr
         page_number    = list[0].rjust(5, '0')
 
         uri = URI.parse(image_src)
-        CrMangaDownloadr::Image.new(uri.host.as(String), uri.path.as(String), "#{title_name}-Chap-#{chapter_number}-Pg-#{page_number}.#{extension}")
+        CrMangaDownloadr::Image.new(uri.host.as(String),
+                                    uri.path.as(String),
+                                    "#{title_name}-Chap-#{chapter_number}-Pg-#{page_number}.#{extension}")
       else
         raise Exception.new("Couldn't find proper metadata alt in the image tag")
       end

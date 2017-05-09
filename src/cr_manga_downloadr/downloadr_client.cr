@@ -20,15 +20,11 @@ module CrMangaDownloadr
 
     # FIXME: must unify the several different fetch signatures
 
-    def fetch
-      raise "must implement"
-    end
-
     def fetch(uri : String)
       raise "must implement"
     end
 
-    def fetch(uri : String, filename : String)
+    def fetch_to(uri : String, filename : String)
       raise "must implement"
     end
 
@@ -47,7 +43,6 @@ module CrMangaDownloadr
     end
 
     def get(uri : String, binary = false)
-      # TODO move this cache directory to the config object
       Dir.mkdir_p(@config.cache_directory) unless Dir.exists?(@config.cache_directory)
       cache_path = File.join(@config.cache_directory, cache_filename(uri))
       while true

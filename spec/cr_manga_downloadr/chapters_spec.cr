@@ -5,7 +5,7 @@ describe CrMangaDownloadr::Chapters do
     WebMock.stub(:get, "www.mangareader.net/naruto").
       to_return(status: 200, body: File.read("spec/fixtures/naruto.html"))
 
-    config = CrMangaDownloadr::Config.new("www.mangareader.net", "/naruto", "", 10, "", 10, true, "/tmp")
+    config = CrMangaDownloadr::Config.new("www.mangareader.net", "/naruto")
     chapters = CrMangaDownloadr::Chapters.new(config).fetch
 
     (chapters.try &.size).should eq(700)

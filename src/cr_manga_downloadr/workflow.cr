@@ -66,7 +66,7 @@ module CrMangaDownloadr
         image_file = File.join(config.download_directory, image.filename)
         unless File.exists?(image_file)
           engine.domain = image.host
-          engine.fetch(image.path, image_file)
+          engine.fetch_to(image.path, image_file)
         end
         [ image_file ]
       end
@@ -88,8 +88,8 @@ module CrMangaDownloadr
 
         puts "Moving images to #{volume_directory} ..."
         batch.each do |file|
-          destination_file = file.split("/").last
-          File.rename(file, File.join(volume_directory, destination_file))
+          destination_file = File.join(volume_directory, File.basename(file))
+          File.rename(file, destination_file)
         end
 
         puts "Generating #{volume_file} ..."
