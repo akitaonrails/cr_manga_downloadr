@@ -5,7 +5,7 @@ require "benchmark"
 
 opt_manga_directory = "/tmp"
 opt_manga_root_uri = ""
-opt_batch_size = 60
+opt_batch_size = 50
 opt_resize_format = "600x800"
 opt_pages_per_volume = 250
 opt_run_tests = false
@@ -43,7 +43,7 @@ OptionParser.parse! do |opts|
 
   opts.on( "-t", "--test", "run a simulation to one-punch man manga") do |_|
     opt_manga_root_uri = "http://www.mangareader.net/onepunch-man"
-    opt_manga_directory = "/tmp/cr-one-punch"
+    opt_manga_directory = "/tmp/cr_one_punch"
     opt_run_tests = true
   end
 

@@ -30,8 +30,8 @@ module CrMangaDownloadr
 
     def http_client!
       HTTP::Client.new(@domain).tap do |c|
-        c.connect_timeout = 30.seconds
-        c.dns_timeout = 10.seconds
+        c.connect_timeout = 5.seconds
+        c.dns_timeout = 5.seconds
         c.read_timeout = 5.minutes
       end
     end
